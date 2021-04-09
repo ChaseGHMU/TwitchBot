@@ -1,6 +1,8 @@
 const tmi = require("tmi.js");
 const v3 = require("node-hue-api").v3;
 
+const boiData = require("./boi_items.json");
+
 const USERNAME = process.env.HUE_USERNAME;
 const LIGHT_ID = 1;
 
@@ -42,8 +44,21 @@ client.on("message", (target, context, msg, self) => {
     case "!changeBrightness":
       changeBrightness(target, msg);
       break;
+    case "!item":
+      getItemInfo(target, msg);
+      break;
+    case "!help":
+      showHelpMessages(target);
+      break;
   }
 });
+
+function showHelpMessages(target) {
+  client.say(
+    target,
+    "!lightOff\n!lightOn\n!blue\n!red\n!alert\n!changeColor {0.0-1.0} {0.0-1.0}\n!changeBrightness {1-100}\n !item {item name} (binding of isaac only)"
+  );
+}
 
 async function changeLightColor(x, y) {
   updateLightWithOptions({ xy: [x, y] });
@@ -128,6 +143,18 @@ async function updateLightWithOptions(options) {
     .then((api) => {
       return api.lights.setLightState(LIGHT_ID, options);
     });
+}
+
+//Binding Of Isaac Items Functions
+function getItemInfo(target, msg) {
+  messageArray = msg.split(" ");
+  messageWithoutCommand = messageArray.splice(1);
+
+  itemDescription = boiData[messageWithoutCommand.join(" ").toLowerCase()];
+
+  if (itemDescription != null) {
+    client.say(target, itemDescription);
+  }
 }
 
 client.connect();
